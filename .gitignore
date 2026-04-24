@@ -1,0 +1,12 @@
+server/.env
+server/__pycache__/
+server/*.pyc
+server/data/
+server/.venv/
+
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.apk
+*.aab

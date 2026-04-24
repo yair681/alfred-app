@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "archetype": "personal_assistant",
+  "platform": "android_apk",
+  "architecture": "server_plus_app",
+  "identity": {
+    "name": "אלפרד",
+    "tone_description": "מצחיק וחברי",
+    "greeting_example": "היי! אלפרד לשירותך — מוכן לעזור, לבלבל, ולהצחיק בסדר הזה בדיוק 😄"
+  },
+  "audience": {
+    "mode": "private",
+    "single_user": true
+  },
+  "scope": {
+    "in_scope": ["הכל"],
+    "out_of_scope": [],
+    "out_of_scope_response": null
+  },
+  "tools": [
+    "google_calendar",
+    "gmail",
+    "reminders",
+    "web_search",
+    "camera_vision"
+  ],
+  "tools_config": {
+    "google_calendar": { "auth": "oauth2", "calendars": ["primary"] },
+    "gmail": { "auth": "oauth2", "mode": "read_write" },
+    "reminders": { "type": "android_notifications" },
+    "web_search": { "provider": "google_custom_search" },
+    "camera_vision": { "provider": "claude_vision" }
+  },
+  "build": {
+    "apk_ci": "github_actions",
+    "auto_build_on_push": true
+  },
+  "extras": {
+    "response_length": "medium",
+    "language_mode": "hebrew_primary",
+    "off_hours_mode": "always_reply"
+  }
+}
