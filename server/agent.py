@@ -9,6 +9,7 @@ from tools import TOOL_REGISTRY
 import tools.reminders  # registers reminder tools
 import tools.google_calendar  # registers calendar tools
 import tools.gmail  # registers gmail tools
+import tools.web_search  # registers web search tool
 
 FRAMEWORK_INJECTED_USER_ID = {"create_reminder", "list_reminders", "cancel_reminder"}
 
