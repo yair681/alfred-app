@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitClient {
     // Change this to your Render URL after deployment
     // For local testing: http://10.0.2.2:8000/ (Android emulator)
-    private const val BASE_URL = "https://alfred-server.onrender.com/"
+    private const val BASE_URL = "https://alfred-server-6mlw.onrender.com/"
 
     val api: ApiService by lazy {
         Retrofit.Builder()
