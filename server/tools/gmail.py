@@ -16,7 +16,7 @@ def _service():
 
 def search_emails(query: str, max_results: int = 5) -> str:
     svc = _service()
-    result = svc.users().messages().list(userId="me", q=query, maxResults=max_results).execute()
+    result = svc.users().messages().list(userId="me", q=query, maxResults=int(max_results)).execute()
     messages = result.get("messages", [])
     if not messages:
         return "לא נמצאו מיילים."

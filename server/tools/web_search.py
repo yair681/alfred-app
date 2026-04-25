@@ -9,7 +9,7 @@ def search_web(query: str, num_results: int = 5) -> str:
 
     r = httpx.get(
         "https://www.googleapis.com/customsearch/v1",
-        params={"key": api_key, "cx": cx, "q": query, "num": num_results},
+        params={"key": api_key, "cx": cx, "q": query, "num": int(num_results)},
         timeout=10,
     )
     data = r.json()
