@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Robot head -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,38 Q34,28 54,28 Q74,28 74,38 L74,66 Q74,76 54,76 Q34,76 34,66 Z" />
+
+    <!-- Eyes -->
+    <ellipse
+        android:fillColor="#1976D2"
+        android:cx="44"
+        android:cy="50"
+        android:rx="5"
+        android:ry="5" />
+    <ellipse
+        android:fillColor="#1976D2"
+        android:cx="64"
+        android:cy="50"
+        android:rx="5"
+        android:ry="5" />
+
+    <!-- Eye shine -->
+    <ellipse
+        android:fillColor="#FFFFFF"
+        android:cx="46"
+        android:cy="48"
+        android:rx="2"
+        android:ry="2" />
+    <ellipse
+        android:fillColor="#FFFFFF"
+        android:cx="66"
+        android:cy="48"
+        android:rx="2"
+        android:ry="2" />
+
+    <!-- Smile -->
+    <path
+        android:strokeColor="#1976D2"
+        android:strokeWidth="2.5"
+        android:fillColor="#00000000"
+        android:pathData="M44,62 Q54,70 64,62" />
+
+    <!-- Antenna -->
+    <rect
+        android:fillColor="#FFFFFF"
+        android:left="52"
+        android:top="20"
+        android:right="56"
+        android:bottom="30" />
+    <ellipse
+        android:fillColor="#FFD700"
+        android:cx="54"
+        android:cy="19"
+        android:rx="4"
+        android:ry="4" />
+
+    <!-- Bow tie -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M44,78 L54,83 L64,78 L54,73 Z" />
+
+</vector>
