@@ -3,7 +3,12 @@ package com.alfred.app
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-data class ChatRequest(val message: String, val user_id: String = "alfred_user")
+data class ChatRequest(
+    val message: String,
+    val user_id: String = "alfred_user",
+    val image_base64: String? = null,
+    val image_mime_type: String = "image/jpeg"
+)
 data class ChatResponse(val reply: String)
 
 interface ApiService {

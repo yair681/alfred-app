@@ -46,10 +46,19 @@
             android:paddingBottom="8dp" />
 
         <ImageButton
+            android:id="@+id/btnImage"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp"
+            android:src="@android:drawable/ic_menu_camera"
+            android:background="#E0E0E0"
+            android:contentDescription="תמונה" />
+
+        <ImageButton
             android:id="@+id/btnSend"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="4dp"
             android:src="@android:drawable/ic_menu_send"
             android:background="#1976D2"
             android:tint="#FFFFFF"

@@ -28,23 +28,39 @@ def _run_tool(tool_name: str, tool_input: dict, user_id: str) -> str:
         return f"שגיאה בהרצת {tool_name}: {e}"
 
 
-def handle_message(user_id: str, message: str) -> str:
+VISION_MODEL = "llama-3.2-11b-vision-preview"
+
+
+def _build_user_content(message: str, image_base64: str | None, image_mime_type: str) -> list | str:
+    if not image_base64:
+        return message
+    return [
+        {"type": "text", "text": message or "מה יש בתמונה?"},
+        {"type": "image_url", "image_url": {"url": f"data:{image_mime_type};base64,{image_base64}"}},
+    ]
+
+
+def handle_message(user_id: str, message: str, image_base64: str | None = None, image_mime_type: str = "image/jpeg") -> str:
     from tools.reminders import pop_pending
     pending = pop_pending(user_id)
     if pending:
         reminder_text = " | ".join(pending)
         database.append(user_id, "assistant", f"🔔 תזכורת: {reminder_text}")
 
-    database.append(user_id, "user", message)
+    display_message = message or "[תמונה]"
+    database.append(user_id, "user", display_message)
     history = database.tail(user_id, MAX_HISTORY)
 
     system_prompt = build_system_prompt(TOOL_REGISTRY)
-    messages = [{"role": "system", "content": system_prompt}] + history
+    user_content = _build_user_content(message, image_base64, image_mime_type)
+    history_with_image = history[:-1] + [{"role": "user", "content": user_content}]
+    messages = [{"role": "system", "content": system_prompt}] + history_with_image
 
-    tools_schema = [td["schema"] for td in TOOL_REGISTRY.values()]
+    model = VISION_MODEL if image_base64 else LLM_MODEL
+    tools_schema = [] if image_base64 else [td["schema"] for td in TOOL_REGISTRY.values()]
 
     for _ in range(5):
-        kwargs = {"model": LLM_MODEL, "messages": messages}
+        kwargs = {"model": model, "messages": messages}
         if tools_schema:
             kwargs["tools"] = [{"type": "function", "function": s} for s in tools_schema]
             kwargs["tool_choice"] = "auto"

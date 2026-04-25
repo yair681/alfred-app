@@ -1,7 +1,13 @@
 package com.alfred.app
 
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
+import android.util.Base64
 import android.view.inputmethod.EditorInfo
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -10,12 +16,21 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alfred.app.databinding.ActivityMainBinding
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val messages = mutableListOf<Message>()
     private lateinit var adapter: ChatAdapter
+    private var pendingImageBase64: String? = null
+
+    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            pendingImageBase64 = uriToBase64(it)
+            binding.btnImage.setBackgroundColor(0xFF4CAF50.toInt())
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +48,7 @@ class MainActivity : AppCompatActivity() {
         binding.rvChat.adapter = adapter
 
         binding.btnSend.setOnClickListener { sendMessage() }
+        binding.btnImage.setOnClickListener { pickImage.launch("image/*") }
         binding.etInput.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEND) { sendMessage(); true } else false
         }
@@ -42,14 +58,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun sendMessage() {
         val text = binding.etInput.text.toString().trim()
-        if (text.isEmpty()) return
+        val image = pendingImageBase64
+        if (text.isEmpty() && image == null) return
+
         binding.etInput.setText("")
-        addMessage(text, isUser = true)
+        pendingImageBase64 = null
+        binding.btnImage.setBackgroundColor(0xFFE0E0E0.toInt())
+
+        val displayText = if (image != null && text.isEmpty()) "📷 תמונה" else if (image != null) "📷 $text" else text
+        addMessage(displayText, isUser = true)
         binding.btnSend.isEnabled = false
 
         lifecycleScope.launch {
             try {
-                val response = RetrofitClient.api.sendMessage(ChatRequest(text))
+                val response = RetrofitClient.api.sendMessage(
+                    ChatRequest(message = text, image_base64 = image)
+                )
                 addMessage(response.reply, isUser = false)
             } catch (e: Exception) {
                 addMessage("סליחה, לא הצלחתי להתחבר לשרת 😅", isUser = false)
@@ -57,6 +81,14 @@ class MainActivity : AppCompatActivity() {
                 binding.btnSend.isEnabled = true
             }
         }
+    }
+
+    private fun uriToBase64(uri: Uri): String {
+        val inputStream = contentResolver.openInputStream(uri) ?: return ""
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+        val output = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, output)
+        return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
     }
 
     private fun addMessage(text: String, isUser: Boolean) {

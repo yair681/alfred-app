@@ -19,6 +19,8 @@ app = FastAPI(lifespan=lifespan)
 class ChatRequest(BaseModel):
     message: str
     user_id: str = "alfred_user"
+    image_base64: str | None = None
+    image_mime_type: str = "image/jpeg"
 
 
 class ChatResponse(BaseModel):
@@ -27,7 +29,7 @@ class ChatResponse(BaseModel):
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(req: ChatRequest):
-    reply = handle_message(req.user_id, req.message)
+    reply = handle_message(req.user_id, req.message, req.image_base64, req.image_mime_type)
     return ChatResponse(reply=reply)
 
 
