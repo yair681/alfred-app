@@ -1,6 +1,6 @@
 import json
 
-from groq import Groq
+from groq import Groq, BadRequestError
 
 import database
 from config import GROQ_API_KEY, LLM_MODEL, MAX_HISTORY
@@ -65,7 +65,16 @@ def handle_message(user_id: str, message: str, image_base64: str | None = None, 
             kwargs["tools"] = [{"type": "function", "function": s} for s in tools_schema]
             kwargs["tool_choice"] = "auto"
 
-        response = _client.chat.completions.create(**kwargs)
+        try:
+            response = _client.chat.completions.create(**kwargs)
+        except BadRequestError as e:
+            if "tool_use_failed" in str(e):
+                # Llama 4 on Groq sometimes generates text instead of valid tool-call JSON.
+                # Retry without tool schema so Groq doesn't try to parse it as a function call.
+                fallback = {k: v for k, v in kwargs.items() if k not in ("tools", "tool_choice")}
+                response = _client.chat.completions.create(**fallback)
+            else:
+                raise
         choice = response.choices[0]
 
         if choice.finish_reason == "tool_calls":
