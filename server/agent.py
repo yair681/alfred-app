@@ -7,6 +7,8 @@ from config import GROQ_API_KEY, LLM_MODEL, MAX_HISTORY
 from prompt import build_system_prompt
 from tools import TOOL_REGISTRY
 import tools.reminders  # registers reminder tools
+import tools.google_calendar  # registers calendar tools
+import tools.gmail  # registers gmail tools
 
 FRAMEWORK_INJECTED_USER_ID = {"create_reminder", "list_reminders", "cancel_reminder"}
 

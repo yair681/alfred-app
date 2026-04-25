@@ -6,3 +6,6 @@ groq==0.13.0
 apscheduler==3.10.4
 pydantic==2.10.3
 sqlalchemy==2.0.36
+google-api-python-client==2.149.0
+google-auth-oauthlib==1.2.1
+google-auth-httplib2==0.2.0
