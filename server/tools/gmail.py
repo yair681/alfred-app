@@ -16,14 +16,34 @@ def _service():
 
 def _extract_body(payload: dict) -> str:
     import base64
-    if "parts" in payload:
-        for part in payload["parts"]:
-            if part.get("mimeType") == "text/plain" and part.get("body", {}).get("data"):
-                return base64.urlsafe_b64decode(part["body"]["data"]).decode("utf-8", errors="ignore")[:500]
-    data = payload.get("body", {}).get("data")
-    if data:
-        return base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore")[:500]
-    return ""
+    import re
+
+    def decode(data: str) -> str:
+        return base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore")
+
+    def strip_html(text: str) -> str:
+        text = re.sub(r"<[^>]+>", " ", text)
+        text = re.sub(r"&nbsp;", " ", text)
+        text = re.sub(r"&[a-z]+;", "", text)
+        text = re.sub(r"\s{2,}", " ", text)
+        return text.strip()
+
+    def find_text(part: dict) -> str:
+        mime = part.get("mimeType", "")
+        if mime == "text/plain" and part.get("body", {}).get("data"):
+            return decode(part["body"]["data"])
+        if mime == "text/html" and part.get("body", {}).get("data"):
+            return strip_html(decode(part["body"]["data"]))
+        for sub in part.get("parts", []):
+            result = find_text(sub)
+            if result:
+                return result
+        return ""
+
+    text = find_text(payload)
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text).strip()
+    return text[:600]
 
 
 def search_emails(query: str, max_results: int = 5) -> str:
