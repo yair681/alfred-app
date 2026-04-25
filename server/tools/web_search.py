@@ -32,8 +32,7 @@ TOOL_REGISTRY["search_web"] = {
         "parameters": {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "מה לחפש"},
-                "num_results": {"type": "integer", "description": "כמה תוצאות להחזיר (ברירת מחדל 5)"},
+                "query": {"type": "string", "description": "מה לחפש. מחזיר עד 5 תוצאות."},
             },
             "required": ["query"],
         },

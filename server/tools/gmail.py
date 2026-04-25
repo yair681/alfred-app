@@ -61,8 +61,7 @@ TOOL_REGISTRY["search_emails"] = {
         "parameters": {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "שאילתת חיפוש (למשל 'from:yosi' או 'subject:פגישה')"},
-                "max_results": {"type": "integer", "description": "מספר תוצאות מקסימלי (ברירת מחדל 5)"},
+                "query": {"type": "string", "description": "שאילתת חיפוש (למשל 'from:yosi' או 'subject:פגישה'). מחזיר עד 5 תוצאות."},
             },
             "required": ["query"],
         },
