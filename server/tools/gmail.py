@@ -14,6 +14,18 @@ def _service():
     )
     return build("gmail", "v1", credentials=creds)
 
+def _extract_body(payload: dict) -> str:
+    import base64
+    if "parts" in payload:
+        for part in payload["parts"]:
+            if part.get("mimeType") == "text/plain" and part.get("body", {}).get("data"):
+                return base64.urlsafe_b64decode(part["body"]["data"]).decode("utf-8", errors="ignore")[:500]
+    data = payload.get("body", {}).get("data")
+    if data:
+        return base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore")[:500]
+    return ""
+
+
 def search_emails(query: str, max_results: int = 5) -> str:
     svc = _service()
     result = svc.users().messages().list(userId="me", q=query, maxResults=int(max_results)).execute()
@@ -22,11 +34,18 @@ def search_emails(query: str, max_results: int = 5) -> str:
         return "לא נמצאו מיילים."
     lines = []
     for m in messages:
-        msg = svc.users().messages().get(userId="me", id=m["id"], format="metadata",
+        msg = svc.users().messages().get(userId="me", id=m["id"], format="full",
               metadataHeaders=["Subject", "From", "Date"]).execute()
         headers = {h["name"]: h["value"] for h in msg["payload"]["headers"]}
-        lines.append(f"- id:{m['id']} | {headers.get('Subject','ללא נושא')} | מ: {headers.get('From','')} | {headers.get('Date','')}")
-    return "\n".join(lines)
+        body = _extract_body(msg["payload"])
+        lines.append(
+            f"--- מייל ---\n"
+            f"נושא: {headers.get('Subject','ללא נושא')}\n"
+            f"מ: {headers.get('From','')}\n"
+            f"תאריך: {headers.get('Date','')}\n"
+            f"תוכן: {body or '(ריק)'}"
+        )
+    return "\n\n".join(lines)
 
 def get_email(message_id: str) -> str:
     svc = _service()
