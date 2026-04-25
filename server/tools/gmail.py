@@ -25,7 +25,7 @@ def search_emails(query: str, max_results: int = 5) -> str:
         msg = svc.users().messages().get(userId="me", id=m["id"], format="metadata",
               metadataHeaders=["Subject", "From", "Date"]).execute()
         headers = {h["name"]: h["value"] for h in msg["payload"]["headers"]}
-        lines.append(f"- {headers.get('Subject','ללא נושא')} | מ: {headers.get('From','')} | {headers.get('Date','')}")
+        lines.append(f"- id:{m['id']} | {headers.get('Subject','ללא נושא')} | מ: {headers.get('From','')} | {headers.get('Date','')}")
     return "\n".join(lines)
 
 def get_email(message_id: str) -> str:
