@@ -1,22 +1,29 @@
 package com.alfred.app
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Base64
 import android.view.inputmethod.EditorInfo
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.alfred.app.databinding.ActivityMainBinding
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,6 +49,9 @@ class MainActivity : AppCompatActivity() {
             view.updatePadding(bottom = systemBars.bottom)
             insets
         }
+
+        requestNotificationPermission()
+        startReminderPolling()
 
         adapter = ChatAdapter(messages)
         binding.rvChat.layoutManager = LinearLayoutManager(this).also { it.stackFromEnd = true }
@@ -76,7 +86,9 @@ class MainActivity : AppCompatActivity() {
                 )
                 addMessage(response.reply, isUser = false)
             } catch (e: Exception) {
-                addMessage("סליחה, לא הצלחתי להתחבר לשרת 😅", isUser = false)
+                val errorMsg = "שגיאה: ${e.javaClass.simpleName} — ${e.message ?: "unknown"}"
+                addMessage(errorMsg, isUser = false)
+                android.util.Log.e("Alfred", "Chat error", e)
             } finally {
                 binding.btnSend.isEnabled = true
             }
@@ -89,6 +101,25 @@ class MainActivity : AppCompatActivity() {
         val output = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 80, output)
         return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1001)
+            }
+        }
+    }
+
+    private fun startReminderPolling() {
+        val workRequest = PeriodicWorkRequestBuilder<ReminderWorker>(1, TimeUnit.MINUTES)
+            .build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "alfred_reminder_poll",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
     }
 
     private fun addMessage(text: String, isUser: Boolean) {

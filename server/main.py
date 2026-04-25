@@ -33,6 +33,13 @@ async def chat(req: ChatRequest):
     return ChatResponse(reply=reply)
 
 
+@app.get("/notifications/{user_id}")
+async def get_notifications(user_id: str):
+    from tools.reminders import pop_pending
+    pending = pop_pending(user_id)
+    return {"notifications": pending}
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "version": 1, "bot": "אלפרד"}
