@@ -36,6 +36,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="כתוב הודעה..."
+            android:hintTextColor="#9E9E9E"
+            android:textColor="#212121"
             android:imeOptions="actionSend"
             android:inputType="textMultiLine|textCapSentences"
             android:maxLines="4"

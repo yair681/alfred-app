@@ -46,7 +46,8 @@ class MainActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.updatePadding(bottom = systemBars.bottom)
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            view.updatePadding(bottom = maxOf(systemBars.bottom, ime.bottom))
             insets
         }
 
