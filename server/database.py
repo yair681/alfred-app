@@ -26,6 +26,14 @@ def init_db() -> None:
                 message_id TEXT PRIMARY KEY
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS notifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                message TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+        """)
 
 
 def append(user_id: str, role: str, content: str) -> None:
@@ -34,6 +42,26 @@ def append(user_id: str, role: str, content: str) -> None:
             "INSERT INTO conversations (user_id, role, content, created_at) VALUES (?, ?, ?, ?)",
             (user_id, role, content, datetime.utcnow().isoformat()),
         )
+
+
+def add_notification(user_id: str, message: str) -> None:
+    with _connect() as conn:
+        conn.execute(
+            "INSERT INTO notifications (user_id, message, created_at) VALUES (?, ?, ?)",
+            (user_id, message, datetime.utcnow().isoformat()),
+        )
+
+
+def pop_notifications(user_id: str) -> list[str]:
+    with _connect() as conn:
+        rows = conn.execute(
+            "SELECT id, message FROM notifications WHERE user_id = ? ORDER BY id",
+            (user_id,),
+        ).fetchall()
+        if rows:
+            ids = ",".join(str(r[0]) for r in rows)
+            conn.execute(f"DELETE FROM notifications WHERE id IN ({ids})")
+    return [r[1] for r in rows]
 
 
 def tail(user_id: str, n: int) -> list[dict]:

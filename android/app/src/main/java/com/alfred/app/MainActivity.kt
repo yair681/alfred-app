@@ -18,12 +18,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.alfred.app.databinding.ActivityMainBinding
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
-import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -114,13 +112,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startReminderPolling() {
-        val workRequest = PeriodicWorkRequestBuilder<ReminderWorker>(1, TimeUnit.MINUTES)
-            .build()
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "alfred_reminder_poll",
-            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
-            workRequest
-        )
+        ReminderWorker.scheduleNext(this)
     }
 
     private fun addMessage(text: String, isUser: Boolean) {

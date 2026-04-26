@@ -5,11 +5,15 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URL
+import java.util.concurrent.TimeUnit
 
 class ReminderWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
@@ -28,10 +32,10 @@ class ReminderWorker(context: Context, params: WorkerParameters) : CoroutineWork
                     showNotification(nm, msg, i)
                 }
             }
-            Result.success()
-        } catch (e: Exception) {
-            Result.retry()
-        }
+        } catch (_: Exception) {}
+
+        scheduleNext(applicationContext)
+        Result.success()
     }
 
     private fun ensureChannel(nm: NotificationManager) {
@@ -54,5 +58,16 @@ class ReminderWorker(context: Context, params: WorkerParameters) : CoroutineWork
 
     companion object {
         const val CHANNEL_ID = "alfred_reminders"
+
+        fun scheduleNext(context: Context) {
+            val request = OneTimeWorkRequestBuilder<ReminderWorker>()
+                .setInitialDelay(1, TimeUnit.MINUTES)
+                .build()
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                "alfred_reminder_poll",
+                ExistingWorkPolicy.REPLACE,
+                request
+            )
+        }
     }
 }

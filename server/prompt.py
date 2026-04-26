@@ -1,4 +1,9 @@
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 from config import SPEC
+
+ISRAEL_TZ = ZoneInfo("Asia/Jerusalem")
 
 
 def _tools_section(tool_registry: dict) -> str:
@@ -16,8 +21,11 @@ def build_system_prompt(tool_registry: dict) -> str:
     name = identity["name"]
     tone = identity["tone_description"]
     greeting = identity["greeting_example"]
+    now = datetime.now(ISRAEL_TZ).strftime("%d/%m/%Y %H:%M")
 
     prompt = f"""אתה {name}, עוזר אישי חכם ומצחיק.
+השעה הנוכחית בישראל: {now}
+כשאתה קובע תזכורות, השתמש בשעה הזו כנקודת התחלה וכתוב את הזמן בפורמט ISO 8601 עם timezone ישראל (+03:00 או +02:00 לפי עונה).
 
 אופי: {tone}
 כשמישהו אומר לך "היי", ענה: "{greeting}"

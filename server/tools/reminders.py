@@ -1,31 +1,34 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
 
+import database
 from config import DATABASE_PATH
 from tools import TOOL_REGISTRY
+
+ISRAEL_TZ = ZoneInfo("Asia/Jerusalem")
 
 Path(DATABASE_PATH).parent.mkdir(parents=True, exist_ok=True)
 
 _jobstore_url = f"sqlite:///{DATABASE_PATH}"
 _scheduler = BackgroundScheduler(
-    jobstores={"default": SQLAlchemyJobStore(url=_jobstore_url)}
+    jobstores={"default": SQLAlchemyJobStore(url=_jobstore_url)},
+    timezone="Asia/Jerusalem",
 )
 _scheduler.start()
 
-_pending: dict[str, list] = {}
-
 
 def _fire_reminder(user_id: str, message: str) -> None:
-    if user_id not in _pending:
-        _pending[user_id] = []
-    _pending[user_id].append(message)
+    database.add_notification(user_id, message)
 
 
 def create_reminder(user_id: str, remind_at_iso: str, message: str) -> str:
     run_time = datetime.fromisoformat(remind_at_iso)
+    if run_time.tzinfo is None:
+        run_time = run_time.replace(tzinfo=ISRAEL_TZ)
     job = _scheduler.add_job(
         _fire_reminder,
         "date",
@@ -53,7 +56,7 @@ def cancel_reminder(reminder_id: str) -> str:
 
 
 def pop_pending(user_id: str) -> list[str]:
-    return _pending.pop(user_id, [])
+    return database.pop_notifications(user_id)
 
 
 TOOL_REGISTRY["create_reminder"] = {
