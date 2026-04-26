@@ -17,6 +17,7 @@ _jobstore_url = f"sqlite:///{DATABASE_PATH}"
 _scheduler = BackgroundScheduler(
     jobstores={"default": SQLAlchemyJobStore(url=_jobstore_url)},
     timezone="Asia/Jerusalem",
+    job_defaults={"misfire_grace_time": 3600},
 )
 _scheduler.start()
 
