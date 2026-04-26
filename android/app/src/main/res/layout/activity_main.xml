@@ -5,15 +5,35 @@
     android:orientation="vertical"
     android:background="#F5F5F5">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:text="אלפרד 🤖"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:gravity="center"
+        android:orientation="horizontal"
         android:background="#1976D2"
-        android:textColor="#FFFFFF" />
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="4dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="אלפרד 🤖"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textColor="#FFFFFF" />
+
+        <ImageButton
+            android:id="@+id/btnSettings"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_preferences"
+            android:background="@android:color/transparent"
+            android:tint="#FFFFFF"
+            android:contentDescription="הגדרות" />
+
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvChat"

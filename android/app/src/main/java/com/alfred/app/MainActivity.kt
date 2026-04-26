@@ -1,6 +1,7 @@
 package com.alfred.app
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -8,8 +9,10 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Base64
 import android.view.inputmethod.EditorInfo
+import android.widget.Switch
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -61,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         binding.etInput.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEND) { sendMessage(); true } else false
         }
+        binding.btnSettings.setOnClickListener { showSettingsDialog() }
 
         addMessage("היי! אלפרד לשירותך — מוכן לעזור, לבלבל, ולהצחיק בסדר הזה בדיוק 😄", isUser = false)
     }
@@ -113,6 +117,50 @@ class MainActivity : AppCompatActivity() {
 
     private fun startReminderPolling() {
         ReminderWorker.scheduleNext(this)
+    }
+
+    private fun showSettingsDialog() {
+        val prefs = getSharedPreferences("alfred_prefs", MODE_PRIVATE)
+        val isEnabled = prefs.getBoolean("floating_button", false)
+
+        @Suppress("DEPRECATION")
+        val toggle = Switch(this).apply {
+            text = "כפתור צף"
+            isChecked = isEnabled
+            setPadding(32, 32, 32, 32)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("הגדרות")
+            .setView(toggle)
+            .setPositiveButton("שמור") { _, _ ->
+                val enabled = toggle.isChecked
+                prefs.edit().putBoolean("floating_button", enabled).apply()
+                if (enabled) enableFloatingButton() else disableFloatingButton()
+            }
+            .setNegativeButton("ביטול", null)
+            .show()
+    }
+
+    private fun enableFloatingButton() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
+        } else {
+            startService(Intent(this, FloatingButtonService::class.java))
+        }
+    }
+
+    private fun disableFloatingButton() {
+        stopService(Intent(this, FloatingButtonService::class.java))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val prefs = getSharedPreferences("alfred_prefs", MODE_PRIVATE)
+        if (prefs.getBoolean("floating_button", false) &&
+            (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this))) {
+            startService(Intent(this, FloatingButtonService::class.java))
+        }
     }
 
     private fun addMessage(text: String, isUser: Boolean) {
