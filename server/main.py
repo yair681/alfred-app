@@ -40,6 +40,13 @@ async def get_notifications(user_id: str):
     return {"notifications": pending}
 
 
+@app.get("/test-reminder/{user_id}")
+async def test_reminder(user_id: str):
+    import database
+    database.add_notification(user_id, "🔔 בדיקה — התזכורות עובדות!")
+    return {"status": "ok", "message": "notification added"}
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "version": 1, "bot": "אלפרד"}
