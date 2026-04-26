@@ -41,9 +41,15 @@ def _extract_body(payload: dict) -> str:
         return ""
 
     text = find_text(payload)
-    text = re.sub(r"[ \t]+", " ", text)
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    # remove URLs
+    text = re.sub(r"https?://\S+", "", text)
+    # remove lines that are just whitespace or single chars
+    lines = [l.strip() for l in text.split("\n")]
+    lines = [l for l in lines if len(l) > 2]
+    text = "\n".join(lines)
     text = re.sub(r"\n{3,}", "\n\n", text).strip()
-    return text[:600]
+    return text[:500]
 
 
 def search_emails(query: str, max_results: int = 5) -> str:
